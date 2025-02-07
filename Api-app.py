@@ -85,8 +85,9 @@ def classify_number(number: Union[int, None] = Query(default=None)):
         "fun_fact": get_fun_fact(converted_number),
     }
 
-# Run Server
+import os
+
 if __name__ == "__main__":
     import uvicorn
-    port = int(os.environ.get("PORT", 5000))  # Use Render's PORT or default to 5000
+    port = int(os.environ.get("PORT", 5000))  # Default to 5000 if PORT is not set
     uvicorn.run(app, host="0.0.0.0", port=port)
