@@ -3,7 +3,7 @@ from typing import Union
 import requests
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
-import os  # Import os for environment variables
+import os
 
 # Custom Exception
 class UnicornException(Exception):
@@ -30,6 +30,11 @@ async def unicorn_exception_handler(request: Request, exc: UnicornException):
         content={"error": True, "number": "alphabet"},
     )
 
+# Root Path Route
+@app.get("/")
+def read_root():
+    return {"message": "Welcome to the Number Classification API!"}
+
 # Helper Functions
 def is_prime(n: int) -> bool:
     """Check if a number is prime."""
@@ -49,7 +54,7 @@ def is_armstrong(n: int) -> bool:
     digits = [int(d) for d in str(abs(n))]  # Handle negative numbers
     return sum(d**len(digits) for d in digits) == abs(n)
 
-def get_fun_fact(n: int) -> str:
+def get_fun_fact(n: Union[int, float]) -> str:
     """Fetch a fun fact about the number from the Numbers API."""
     try:
         response = requests.get(f"http://numbersapi.com/{n}/math?json")
@@ -61,33 +66,37 @@ def get_fun_fact(n: int) -> str:
 
 # API Endpoint
 @app.get("/api/classify-number/")
-def classify_number(number: Union[int, None] = Query(default=None)):
+def classify_number(number: Union[int, float, None] = Query(default=None)):
     """Classify a number and return its properties."""
-    if not number:
+    if number is None:
         raise UnicornException()
 
     try:
-        converted_number = int(number)
+        # Convert the input to a float first to handle both integers and floating-point numbers
+        converted_number = float(number)
     except ValueError:
         raise UnicornException()
 
+    # Check if the number is an integer
+    is_integer = converted_number == int(converted_number)
+
     properties = []
-    if is_armstrong(converted_number):
+    if is_integer and is_armstrong(int(converted_number)):
         properties.append("armstrong")
-    properties.append("odd" if converted_number % 2 else "even")
+    if is_integer:
+        properties.append("odd" if int(converted_number) % 2 else "even")
 
     return {
         "number": number,
-        "is_prime": is_prime(converted_number),
-        "is_perfect": is_perfect(converted_number),
+        "is_prime": is_integer and is_prime(int(converted_number)),
+        "is_perfect": is_integer and is_perfect(int(converted_number)),
         "properties": properties,
-        "digit_sum": sum(int(digit) for digit in str(abs(converted_number)) if digit.isdigit()),
+        "digit_sum": sum(int(digit) for digit in str(abs(int(converted_number))) if digit.isdigit()) if is_integer else None,
         "fun_fact": get_fun_fact(converted_number),
     }
 
-import os
-
+# Run Server
 if __name__ == "__main__":
     import uvicorn
-    port = int(os.environ.get("PORT", 5000))  # Default to 5000 if PORT is not set
+    port = int(os.environ.get("PORT", 5000))  # Use Render's PORT or default to 5000
     uvicorn.run(app, host="0.0.0.0", port=port)
