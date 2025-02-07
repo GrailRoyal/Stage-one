@@ -68,15 +68,16 @@ def get_fun_fact(n: Union[int, float]) -> str:
 
 # API Endpoint
 @app.get("/api/classify-number/")
-def classify_number(number: Union[int, float, None] = Query(default=None)):
+def classify_number(number: Union[str, None] = Query(default=None)):
     """Classify a number and return its properties."""
     if number is None:
         raise UnicornException()
 
     try:
-        # Convert the input to a float first to handle both integers and floating-point numbers
+        # Attempt to convert the input to a float
         converted_number = float(number)
     except ValueError:
+        # If conversion fails, raise UnicornException
         raise UnicornException()
 
     # Check if the number is an integer
