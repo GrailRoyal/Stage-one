@@ -47,6 +47,8 @@ def is_prime(n: int) -> bool:
 
 def is_perfect(n: int) -> bool:
     """Check if a number is perfect."""
+    if n < 1:  # Perfect numbers are positive integers
+        return False
     return sum(i for i in range(1, n) if n % i == 0) == n
 
 def is_armstrong(n: int) -> bool:
