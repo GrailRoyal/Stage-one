@@ -90,7 +90,7 @@ def classify_number(number: Union[str, None] = Query(default=None)):
         properties.append("odd" if int(converted_number) % 2 else "even")
 
     return {
-        "number": number,
+        "number": converted_number,  # Ensure the number field is numeric
         "is_prime": is_integer and is_prime(int(converted_number)),
         "is_perfect": is_integer and is_perfect(int(converted_number)),
         "properties": properties,
